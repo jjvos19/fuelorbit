@@ -264,6 +264,7 @@ $RECYCLE.BIN/
 *.[bB][aA][tT]
 
 # archivos de configuracion
+**/.env
 .env
 
 # tmp, temp, .tmp, .temp
