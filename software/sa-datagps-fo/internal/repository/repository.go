@@ -2,10 +2,10 @@ package repository
 
 import (
 	"datagps/internal/models"
+	"log"
 	"math"
 
 	"github.com/google/uuid"
-	"github.com/stellar/go-stellar-sdk/support/log"
 	"gorm.io/gorm"
 )
 
@@ -16,7 +16,7 @@ type DataRepository interface {
 type GroupRepository interface {
 	Create(group *models.Group) error
 	PendingGroups(limit int) ([]models.Group, error)
-	ExecSetGroup() error
+	ExecSetGroup(int) (int, error)
 	Save(*models.Group) error
 	Groups(page int, totalPages int, records int) ([]models.Group, int, error)
 }
@@ -59,9 +59,14 @@ func (r *groupRepo) Save(group *models.Group) error {
 	return r.db.Save(&group).Error
 }
 
-func (r *groupRepo) ExecSetGroup() error {
-	result := r.db.Exec("call sp_set_group()")
-	return result.Error
+func (r *groupRepo) ExecSetGroup(groups int) (int, error) {
+	var resultParam struct {
+		OGroups int `gorm:"column:o_groups"`
+	}
+
+	// Se debe utilizar Raw, para llamar store procedure.
+	result := r.db.Raw("call sp_set_group(?, ?)", groups, gorm.Expr("NULL")).Scan(&resultParam)
+	return resultParam.OGroups, result.Error
 }
 
 func (r *groupRepo) Groups(page int, totalPages int, records int) ([]models.Group, int, error) {
@@ -71,7 +76,7 @@ func (r *groupRepo) Groups(page int, totalPages int, records int) ([]models.Grou
 		r.db.Table("tkr_group").Count(&count)
 		pagesCount := float64(count) / float64(records)
 		totalPages = int(math.Ceil(pagesCount))
-		log.Infof("page: %d totalPages: %d records: %d PagesCount: %f", page, totalPages, records, pagesCount)
+		log.Printf("page: %d totalPages: %d records: %d PagesCount: %f", page, totalPages, records, pagesCount)
 	}
 	err := r.db.Order("id ASC").Limit(records).Offset((page - 1) * records).Find(&groups).Error
 	return groups, totalPages, err
