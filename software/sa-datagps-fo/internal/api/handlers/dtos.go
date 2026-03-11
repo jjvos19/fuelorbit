@@ -45,9 +45,12 @@ type ProcessPendingGroupsResponse struct {
 }
 
 type ExecSetGroupRequest struct {
+	Groups int `json:"groups"`
 }
 
 type ExecSetGroupResponse struct {
+	Message string `json:"message"`
+	Groups  int    `json:"groups"`
 }
 
 type GroupsRequest struct {

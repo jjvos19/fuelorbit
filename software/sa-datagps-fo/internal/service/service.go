@@ -43,8 +43,8 @@ func (s *AppService) ProcessPendingGroups(limit int) ([]models.Group, error) {
 	return groupsNew, nil
 }
 
-func (s *AppService) ExecSetGroup() error {
-	return s.groupRepo.ExecSetGroup()
+func (s *AppService) ExecSetGroup(groups int) (int, error) {
+	return s.groupRepo.ExecSetGroup(groups)
 }
 
 func (s *AppService) Groups(page int, totalPage int, records int) ([]models.Group, int, error) {

@@ -4,6 +4,7 @@ import (
 	"datagps/internal/models"
 	"datagps/internal/service"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -104,14 +105,17 @@ func (h *Handler) ExecSetGroup(ctx *gin.Context) {
 		return
 	}
 
-	err := h.srv.ExecSetGroup()
+	groups, err := h.srv.ExecSetGroup(req.Groups)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error generando el grupo"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"mensaje": "Se genero un grupo"})
-
+	text := "Se genero " + strconv.Itoa(groups) + " grupo"
+	if groups != 1 {
+		text = text + "s"
+	}
+	ctx.JSON(http.StatusOK, ExecSetGroupResponse{Message: text, Groups: groups})
 }
 
 func (h *Handler) Groups(ctx *gin.Context) {
